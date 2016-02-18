@@ -20,6 +20,7 @@
     UIImage *imageToDisplay;
     UIView *imageActionSheetSenderView;
     UIPopoverController *imagePickerPopover;
+    CBLReplication *repl;
 }
 
 @end
@@ -60,9 +61,28 @@
     }
 }
 
+-(void) reloadAfterPendingPush:(NSNotification *)notification {
+    [self.dataSource reloadFromQuery];
+}
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     [self configureView];
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    AppDelegate *app = [[UIApplication sharedApplication] delegate];
+    
+    repl = app.push;
+
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(reloadAfterPendingPush:)
+                                                 name:kCBLReplicationChangeNotification object:repl];
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:kCBLReplicationChangeNotification object:repl];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -226,6 +246,18 @@
                                                     forIndexPath:indexPath];
     CBLQueryRow *row = [source rowAtIndex:indexPath.row];
     Task *task = [Task modelForDocument:row.document];
+
+    int64_t delay = 1.5; // In seconds
+    dispatch_time_t time = dispatch_time(DISPATCH_TIME_NOW, delay * NSEC_PER_SEC);
+    dispatch_after(time, dispatch_get_main_queue(), ^(void){
+        if ([repl isDocumentPending:task.document]) {
+            NSLog(@"doc is pending: %@", task.title);
+            cell.name.textColor = [UIColor grayColor];
+        } else {
+            cell.name.textColor = [UIColor blackColor];
+        }
+    });
+
     cell.task = task;
     cell.delegate = self;
 

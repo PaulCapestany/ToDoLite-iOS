@@ -15,6 +15,8 @@
 
 @property (strong, nonatomic, readonly) CBLDatabase *database;
 
+@property (nonatomic) CBLReplication *push;
+
 @property (strong, nonatomic, readonly) NSString *currentUserId;
 
 // For UISplitViewController

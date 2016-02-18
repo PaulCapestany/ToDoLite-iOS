@@ -32,7 +32,6 @@
 
 @interface AppDelegate () <UISplitViewControllerDelegate, UIAlertViewDelegate>
 
-@property (nonatomic) CBLReplication *push;
 @property (nonatomic) CBLReplication *pull;
 @property (nonatomic) NSError *lastSyncError;
 @property (nonatomic) FBSDKLoginManager *facebookLoginManager;

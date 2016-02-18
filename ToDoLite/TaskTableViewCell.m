@@ -33,7 +33,6 @@
     self.name.text = task.title;
     
     bool checked = task.checked;
-    self.name.textColor = checked ? [UIColor grayColor] : [UIColor blackColor];
     if (checked) {
         self.accessoryType = UITableViewCellAccessoryCheckmark;
     } else {

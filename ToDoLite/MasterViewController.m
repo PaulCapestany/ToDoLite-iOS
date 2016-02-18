@@ -14,7 +14,9 @@
 
 static void *listsQueryContext = &listsQueryContext;
 
-@interface MasterViewController ()
+@interface MasterViewController () {
+    CBLReplication *repl;
+}
 
 @property CBLDatabase *database;
 @property CBLLiveQuery *liveQuery;
@@ -58,11 +60,17 @@ static void *listsQueryContext = &listsQueryContext;
     if (selected) {
         [self.tableView deselectRowAtIndexPath:selected animated:NO];
     }
+    
+    repl = app.push;
+    
+    [[NSNotificationCenter defaultCenter] addObserver: self selector: @selector(reloadAfterPendingPush:)
+                                                 name:kCBLReplicationChangeNotification object:repl];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
     AppDelegate *app = [[UIApplication sharedApplication] delegate];
     [app removeObserver:self forKeyPath:@"database" context:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:kCBLReplicationChangeNotification object:repl];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -71,6 +79,10 @@ static void *listsQueryContext = &listsQueryContext;
 
 - (void)dealloc {
     [self.liveQuery removeObserver:self forKeyPath:@"rows" context:listsQueryContext];
+}
+
+-(void) reloadAfterPendingPush:(NSNotification *)notification {
+    [self.tableView reloadData];
 }
 
 #pragma mark - Segues
@@ -150,6 +162,16 @@ static void *listsQueryContext = &listsQueryContext;
     
     CBLQueryRow* row = [self.listsResult objectAtIndex:indexPath.row];
     cell.textLabel.text = [row.document propertyForKey:@"title"];
+    
+    int64_t delay = 1.5; // In seconds
+    dispatch_time_t time = dispatch_time(DISPATCH_TIME_NOW, delay * NSEC_PER_SEC);
+    dispatch_after(time, dispatch_get_main_queue(), ^(void){
+        if ([repl isDocumentPending:row.document]) {
+            cell.textLabel.textColor = [UIColor grayColor];
+        } else {
+            cell.textLabel.textColor = [UIColor blackColor];
+        }
+    });
     
     return cell;
 }
