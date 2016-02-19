@@ -247,16 +247,11 @@
     CBLQueryRow *row = [source rowAtIndex:indexPath.row];
     Task *task = [Task modelForDocument:row.document];
 
-    int64_t delay = 1.5;
-    // avoid having all text start gray only to immediately turn black (otherwise there is a flicker effect that users might think is a bug)
-    dispatch_time_t time = dispatch_time(DISPATCH_TIME_NOW, delay * NSEC_PER_SEC);
-    dispatch_after(time, dispatch_get_main_queue(), ^(void){
-        if ([repl isDocumentPending:task.document]) {
-            cell.name.textColor = [UIColor grayColor];
-        } else {
-            cell.name.textColor = [UIColor blackColor];
-        }
-    });
+    if ([repl isDocumentPending:task.document]) {
+        cell.name.textColor = [UIColor grayColor];
+    } else {
+        cell.name.textColor = [UIColor blackColor];
+    }
 
     cell.task = task;
     cell.delegate = self;
