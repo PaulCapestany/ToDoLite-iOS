@@ -163,7 +163,8 @@ static void *listsQueryContext = &listsQueryContext;
     CBLQueryRow* row = [self.listsResult objectAtIndex:indexPath.row];
     cell.textLabel.text = [row.document propertyForKey:@"title"];
     
-    int64_t delay = 1.5; // In seconds
+    int64_t delay = 1.5;
+    // avoid having all text start gray only to immediately turn black (otherwise there is a flicker effect that users might think is a bug)
     dispatch_time_t time = dispatch_time(DISPATCH_TIME_NOW, delay * NSEC_PER_SEC);
     dispatch_after(time, dispatch_get_main_queue(), ^(void){
         if ([repl isDocumentPending:row.document]) {
